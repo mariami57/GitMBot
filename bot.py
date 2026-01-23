@@ -1,5 +1,6 @@
 import os
 import json
+from github import Github
 
 event_path = os.environ['GITHUB_EVENT_PATH']
 
@@ -17,4 +18,14 @@ print(f"Author: {comment_author}")
 print(f"Text: {comment_text}")
 
 if 'assign me' in comment_text.lower():
-    print(f'Assigning {comment_author} to issue {issue_number}')
+    gh = Github(os.environ['GH_TOKEN'])
+    repo = gh.get_repo(repo_name)
+    issue = repo.get_issue(number=issue_number)
+
+    try:
+        issue.add_to_assignees(comment_author)
+        issue.create_comment(f'Assigned to {comment_author}.')
+        print(f'Assigned to {comment_author} successfully, - issue #{issue_number}')
+
+    except Exception as e:
+        print(f'Error assigning: {e}')

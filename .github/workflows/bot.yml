@@ -1,4 +1,4 @@
-name: Bot Test
+name: Issue bot
 
 on:
   issue_comment:
@@ -11,15 +11,14 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Inspect payload
-        run: cat "$GITHUB_EVENT_PATH"
-
       - uses: actions/setup-python@v4
         with:
           python-version: '3.11'
 
-      - name: Check repo files
-        run: ls -R
+      - name: Install dependencies
+        run: pip install PyGithub
 
       - name: Run Python bot
         run: python bot.py
+        env:
+          GH_TOKEN: $ {{ secrets.GH_TOKEN }}
