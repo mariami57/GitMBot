@@ -13,8 +13,13 @@ jobs:
 
       - name: Inspect payload
         run: cat "$GITHUB_EVENT_PATH"
+
       - uses: actions/setup-python@v4
         with:
           python-version: '3.11'
+
+      - name: Check repo files
+        run: ls -R
+
       - name: Run Python bot
         run: python bot.py
