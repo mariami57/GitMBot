@@ -1,6 +1,6 @@
 import os
 import json
-from github import Github
+from github import Github, Auth
 
 event_path = os.environ['GITHUB_EVENT_PATH']
 
@@ -18,7 +18,7 @@ print(f"Author: {comment_author}")
 print(f"Text: {comment_text}")
 
 if 'assign me' in comment_text.lower():
-    gh = Github(os.environ['GH_TOKEN'])
+    gh = Github(auth=Auth.Token(os.environ['GH_TOKEN']))
     repo = gh.get_repo(repo_name)
     issue = repo.get_issue(number=issue_number)
 
