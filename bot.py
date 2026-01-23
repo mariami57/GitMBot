@@ -24,8 +24,9 @@ if 'assign me' in comment_text.lower():
 
     try:
         issue.add_to_assignees(comment_author)
-        issue.create_comment(f'Assigned to {comment_author}.')
-        print(f'Assigned to {comment_author} successfully, - issue #{issue_number}')
+        issue.create_comment(f'Assigned to {comment_author}.\n \n'
+        f'*This comment was automatically generated*')
+        print(f'Assigned to {comment_author} successfully, - issue #{issue_number}\n')
 
     except Exception as e:
         print(f'Error assigning: {e}')
