@@ -1,0 +1,12 @@
+name: Bot Test
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print event
+        run: echo "A comment was created!"
