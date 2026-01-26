@@ -1,5 +1,7 @@
 import os
 import json
+from datetime import datetime, timedelta, timezone
+
 from github import Github, Auth
 
 event_path = os.environ['GITHUB_EVENT_PATH']
@@ -12,6 +14,7 @@ comment_text = event['comment']['body']
 comment_author = event['comment']['user']['login']
 issue_number = event['issue']['number']
 repo_name = event['repository']['full_name']
+assignment_date = event['comment']['created_at']
 
 print(f"Comment on {repo_name} issue #{issue_number}")
 print(f"Author: {comment_author}")
@@ -48,3 +51,29 @@ if 'assign me' in comment_text.lower():
         print(f'Error assigning: {e}')
 
 
+def check_in(issue):
+    label_names = [label.name for label in issue.get_labels()]
+    if not issue.assignees and not "bot:assigned"  in label_names:
+        return
+
+    assignee = issue.assignees[0].login
+    now = datetime.now(timezone.utc)
+    checkin_date = now
+
+    if 'bot:checkin-sent' not in label_names:
+        assigned_at = issue.updated_at
+        if now >= assigned_at + timedelta(days=1):
+            issue.create_comment(f'Hi @assignee 👋\n'
+            f' Just checking in — are you still working on this issue?'
+            f'Please reply within **3 days**, otherwise I’ll unassign you so someone else can take it.'
+            f'*This comment was automatically generated.*')
+            issue.add_to_labels('bot:awaiting-response', 'bot:checkin-sent')
+
+        return
+    elif 'bot:awaiting-response' in label_names:
+        if now >= checkin_date + timedelta(days=1):
+            issue.remove_from_assignees(assignee)
+            issue.remove_from_labels('bot:checkin-sent', 'bot:assigned', 'bot:awaiting-response')
+            issue.create_comment(f'⏳ No response received in the last 3 days.'
+            f'The assignee has been removed so others can pick up this issue.'
+            f'*This comment was automatically generated.*')
