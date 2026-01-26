@@ -14,11 +14,20 @@ comment_text = event['comment']['body']
 comment_author = event['comment']['user']['login']
 issue_number = event['issue']['number']
 repo_name = event['repository']['full_name']
-assignment_date = event['comment']['created_at']
+
 
 print(f"Comment on {repo_name} issue #{issue_number}")
 print(f"Author: {comment_author}")
 print(f"Text: {comment_text}")
+
+def check_in_reply_by_assignee():
+    label_names = [label.name for label in issue.get_labels()]
+    assignee = issue.assignees[0].login
+
+    if 'bot:awaiting-response' not in label_names or not issue.assignees:
+        return False
+
+    return comment_author == issue.assignees[0].login
 
 def ensure_label(repo, name, color='ededed', description=''):
     try:
@@ -34,6 +43,9 @@ if 'assign me' in comment_text.lower():
     ensure_label(repo, 'bot:assigned', '0e8a16', 'Assigned by bot')
     ensure_label(repo, 'bot:dropped', 'b60205', 'Unassigned by bot')
 
+    if check_in_reply_by_assignee():
+        issue.remove_from_labels('bot:checkin-sent', 'bot:awaiting-response')
+        issue.create_comment(f'Thanks @{comment_author} for checking in! ✅')
 
     try:
         issue.add_to_assignees(comment_author)
@@ -50,15 +62,13 @@ if 'assign me' in comment_text.lower():
     except Exception as e:
         print(f'Error assigning: {e}')
 
-
-def check_in(issue):
+def check_in():
     label_names = [label.name for label in issue.get_labels()]
-    if not issue.assignees and not "bot:assigned"  in label_names:
+    if not issue.assignees or not "bot:assigned" in label_names:
         return
 
     assignee = issue.assignees[0].login
     now = datetime.now(timezone.utc)
-    checkin_date = now
 
     if 'bot:checkin-sent' not in label_names:
         assigned_at = issue.updated_at
@@ -70,8 +80,16 @@ def check_in(issue):
             issue.add_to_labels('bot:awaiting-response', 'bot:checkin-sent')
 
         return
-    elif 'bot:awaiting-response' in label_names:
-        if now >= checkin_date + timedelta(days=1):
+    if 'bot:awaiting-response' in label_names:
+
+        comments = list(issue.get_comments())
+        checkin_comment = next(
+            (c for c in reversed(comments)
+             if c.user.type == 'Bot' and 'Just checking in' in c.body),
+            None
+        )
+
+        if checkin_comment and now >= checkin_comment.created_at + timedelta(days=3):
             issue.remove_from_assignees(assignee)
             issue.remove_from_labels('bot:checkin-sent', 'bot:assigned', 'bot:awaiting-response')
             issue.create_comment(f'⏳ No response received in the last 3 days.'
