@@ -122,7 +122,7 @@ def check_in(repo):
                         '*This comment was automatically generated.*'
                     )
 
-def main(event, event_name):
+def main():
     event_path = os.environ['GITHUB_EVENT_PATH']
     event_name = os.environ.get('GITHUB_EVENT_NAME')
     print(f'Bot triggered by event: {event_name}')
