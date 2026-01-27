@@ -22,10 +22,11 @@ print(f"Text: {comment_text}")
 
 def check_in_reply_by_assignee():
     label_names = [label.name for label in issue.get_labels()]
-    assignee = issue.assignees[0].login
+
 
     if 'bot:awaiting-response' not in label_names or not issue.assignees:
         return False
+
 
     return comment_author == issue.assignees[0].login
 
