@@ -60,4 +60,24 @@ def test_check_in_reply_by_assignee_label_returns_true():
     assert check_in_reply_by_assignee(issue, 'Bob') is True
 
 
+def test_check_in_send_a_reminder_to_assignee():
+    issue = fake_issue()
+
+    assignee_mock = MagicMock()
+    assignee_mock.login = 'Alice'
+    issue.assignees = [assignee_mock]
+
+    label_assigned = MagicMock()
+    label_assigned.name = 'bot:assigned'
+    issue.get_labels.return_value = [label_assigned]
+
+    issue.updated_at = datetime.now(timezone.utc) - timedelta(days=8)
+
+    repo = fake_repo(issue)
+
+    check_in(repo)
+
+    issue.create_comment.assert_called_once()
+    issue.add_to_labels.assert_any_call('bot:checkin-sent', 'bot:awaiting-response')
+
 
