@@ -21,7 +21,7 @@ def fake_repo(issue):
     return repo
 
 
-def test_handle_assign():
+def test_handle_assign_successfully_assign():
     issue = fake_issue()
     comment_author = 'Alice'
 
@@ -30,6 +30,21 @@ def test_handle_assign():
     issue.add_to_assignees.assert_called_with('Alice')
     issue.add_to_labels.assert_called_with('bot:assigned')
     issue.create_comment.assert_called()
+
+def test_handle_assign_try_to_assign_already_assigned():
+    issue = fake_issue()
+    assignee1 = MagicMock()
+    assignee1.login = 'Alice'
+    issue.assignees = [assignee1]
+
+    assignee2 = MagicMock()
+    assignee2.login = 'Bob'
+
+    handle_assign(issue, 'Bob')
+    issue.add_to_assignees.assert_not_called()
+    issue.add_to_labels.assert_not_called()
+    issue.create_comment.assert_not_called()
+
 
 def test_handle_issue_comment_assign(monkeypatch):
     issue = fake_issue()
