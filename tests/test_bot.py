@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 from datetime import datetime, timedelta, timezone
 
 from bot import handle_assign, check_in_reply_by_assignee, check_in,handle_issue_comment, create_comment
-
+from bot import get_github, get_repo
 
 def fake_issue():
     issue = MagicMock()
@@ -26,6 +26,29 @@ def test_handle_assign():
     comment_author = 'Alice'
 
     handle_assign(issue, comment_author)
+
+    issue.add_to_assignees.assert_called_with('Alice')
+    issue.add_to_labels.assert_called_with('bot:assigned')
+    issue.create_comment.assert_called()
+
+def test_handle_issue_comment_assign(monkeypatch):
+    issue = fake_issue()
+    repo = fake_repo(issue)
+
+    event = {
+        'comment':{'body': 'assign me', 'user': {'login': 'Alice'}},
+        'issue': {'number': 1},
+        'repository':{'full_name':'test/repo'}
+    }
+
+
+
+    fake_gh = MagicMock()
+    fake_gh.get_repo.return_value = repo
+    monkeypatch.setattr('bot.get_github', lambda: fake_gh)
+    monkeypatch.setattr('bot.get_repo', lambda gh, name=None: repo)
+
+    handle_issue_comment(event)
 
     issue.add_to_assignees.assert_called_with('Alice')
     issue.add_to_labels.assert_called_with('bot:assigned')

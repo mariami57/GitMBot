@@ -6,6 +6,12 @@ from github import Github, Auth
 
 DRY_RUN = False
 
+def get_github():
+    return Github(auth=Auth.Token(os.environ['GH_TOKEN']))
+
+def get_repo(repo_name):
+    return get_github().get_repo(repo_name)
+
 def ensure_label(repo, name, color='ededed', description=''):
     try:
         repo.get_label(name)
@@ -32,7 +38,7 @@ def handle_issue_comment(event):
     issue_number = event['issue']['number']
     repo_name = event['repository']['full_name']
 
-    gh = Github(auth=Auth.Token(os.environ['GH_TOKEN']))
+    gh = get_github()
     repo = gh.get_repo(repo_name)
     issue = repo.get_issue(number=issue_number)
 
@@ -127,7 +133,7 @@ def main():
     event_name = os.environ.get('GITHUB_EVENT_NAME')
     print(f'Bot triggered by event: {event_name}')
 
-    gh = Github(auth=Auth.Token(os.environ['GH_TOKEN']))
+    gh = get_gitub()
 
     if event_name == 'issue_comment':
         with open(event_path) as f:
