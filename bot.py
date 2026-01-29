@@ -66,6 +66,9 @@ def handle_assign(issue, comment_author):
     if comment_author in assignees:
         return
 
+    if len(assignees) > 0:
+        return
+
     issue.add_to_assignees(comment_author)
     issue.add_to_labels('bot:assigned')
     create_comment(issue, f'Assigned to @{comment_author}.\n\n This comment was automatically generated.*')
@@ -133,7 +136,7 @@ def main():
     event_name = os.environ.get('GITHUB_EVENT_NAME')
     print(f'Bot triggered by event: {event_name}')
 
-    gh = get_gitub()
+    gh = get_github()
 
     if event_name == 'issue_comment':
         with open(event_path) as f:
