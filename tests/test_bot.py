@@ -45,6 +45,17 @@ def test_handle_assign_try_to_assign_already_assigned():
     issue.add_to_labels.assert_not_called()
     issue.create_comment.assert_not_called()
 
+def test_handle_assign_try_to_assign_the_same_assignee():
+    issue = fake_issue()
+    assignee1 = MagicMock()
+    assignee1.login = 'Alice'
+    issue.assignees = [assignee1]
+
+
+    handle_assign(issue, 'Alice')
+
+    issue.add_to_assignees.assert_not_called()
+
 
 def test_handle_issue_comment_assign(monkeypatch):
     issue = fake_issue()
