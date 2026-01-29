@@ -81,3 +81,36 @@ def test_check_in_send_a_reminder_to_assignee():
     issue.add_to_labels.assert_any_call('bot:checkin-sent', 'bot:awaiting-response')
 
 
+def test_check_in_unassign_assignee():
+    issue = fake_issue()
+
+    assignee_mock = MagicMock()
+    assignee_mock.login = 'Alice'
+    issue.assignees = [assignee_mock]
+
+    label_assigned = MagicMock()
+    label_assigned.name = 'bot:assigned'
+    label_checkin = MagicMock()
+    label_checkin.name = 'bot:awaiting-response'
+    label_sent = MagicMock()
+    label_sent.name = 'bot:checkin-sent'
+
+    issue.get_labels.return_value = [label_assigned, label_checkin, label_sent]
+
+    bot_comment = MagicMock()
+    bot_comment.user.type = 'Bot'
+    bot_comment.body = 'Just checking in'
+    bot_comment.created_at = datetime.now(timezone.utc) - timedelta(days=4)
+    issue.get_comments.return_value = [bot_comment]
+
+    repo = fake_repo(issue)
+    check_in(repo)
+
+    issue.remove_from_assignees.assert_called_with('Alice')
+    issue.remove_from_labels.assert_called()
+    issue.add_to_labels.assert_called_with('bot:dropped')
+    issue.create_comment.assert_called()
+
+
+
+
