@@ -2,27 +2,10 @@ import os
 import json
 from datetime import datetime, timedelta, timezone
 
-from github import Github, Auth
+from helpers import label_names, get_assignee_logins, get_assignees, create_comment, get_github, ensure_label
 
 DRY_RUN = False
 
-def get_github():
-    return Github(auth=Auth.Token(os.environ['GH_TOKEN']))
-
-def get_repo(repo_name):
-    return get_github().get_repo(repo_name)
-
-def ensure_label(repo, name, color='ededed', description=''):
-    try:
-        repo.get_label(name)
-    except Exception:
-        repo.create_label(name=name, color=color, description=description)
-
-def label_names(issue):
-    return  [label.name for label in issue.get_labels()]
-
-def create_comment(issue, comment_text):
-    return issue.create_comment(comment_text)
 
 def check_in_reply_by_assignee(issue, comment_author):
     labels= label_names(issue)
@@ -32,8 +15,55 @@ def check_in_reply_by_assignee(issue, comment_author):
 
     return comment_author == issue.assignees[0].login
 
+
+def handle_assign(issue, comment_author):
+    assignee_logins = get_assignee_logins(issue)
+    assignees = get_assignees(issue)
+
+    if len(assignees) > 0:
+        return
+
+    if comment_author in assignee_logins:
+        return
+
+
+    issue.add_to_assignees(comment_author)
+    issue.add_to_labels('bot:assigned')
+    labels = label_names(issue)
+    if 'bot:dropped' in labels:
+        issue.remove_from_labels('bot:dropped')
+
+    create_comment(issue, f'Assigned to @{comment_author}.\n\n This comment was automatically generated.*')
+
+def handle_unassign(issue, comment_author):
+    assignee_logins = get_assignee_logins(issue)
+    assignees = get_assignees(issue)
+
+    if not assignees:
+        create_comment(issue, 'No one is currently assigned.')
+        return
+
+    if comment_author not in assignee_logins:
+        create_comment(issue, f'You are not assigned to this issue and '
+                              'you are not able to unassign it.'
+                              '\n\n This comment was automatically generated.*')
+        return
+
+    issue.remove_from_assignees(comment_author)
+    issue.remove_from_labels('bot:assigned', 'bot:checkin-sent', 'bot:awaiting-response')
+
+    issue.add_to_labels('bot:dropped')
+    create_comment(issue, f'@{comment_author} has unassigned themselves from this issue.\n\n'
+                          '*This comment was automatically generated.*')
+
+COMMANDS = {
+    'assign me': handle_assign,
+    '/unassign' : handle_unassign,
+
+}
+
 def handle_issue_comment(event):
-    comment_text = event['comment']['body']
+    comment_text = event['comment']['body'].strip().lower()
     comment_author = event['comment']['user']['login']
     issue_number = event['issue']['number']
     repo_name = event['repository']['full_name']
@@ -57,25 +87,10 @@ def handle_issue_comment(event):
         exit(0)
 
 
-    if 'assign me' in comment_text.lower():
-        handle_assign(issue, comment_author)
-
-
-def handle_assign(issue, comment_author):
-    assignees = [a.login for a in issue.assignees]
-    if comment_author in assignees:
-        return
-
-    if len(assignees) > 0:
-        return
-
-    issue.add_to_assignees(comment_author)
-    issue.add_to_labels('bot:assigned')
-    labels = label_names(issue)
-    if 'bot:dropped' in labels:
-        issue.remove_from_labels('bot:dropped')
-
-    create_comment(issue, f'Assigned to @{comment_author}.\n\n This comment was automatically generated.*')
+    for command, handler in COMMANDS.items():
+        if comment_text.startswith(command):
+            handler(issue, comment_author)
+            return
 
 
 
@@ -134,6 +149,8 @@ def check_in(repo):
                         'The assignee has been removed so others can pick up this issue.\n\n'
                         '*This comment was automatically generated.*'
                     )
+
+
 
 def main():
     event_path = os.environ['GITHUB_EVENT_PATH']
