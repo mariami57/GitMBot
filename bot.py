@@ -13,6 +13,9 @@ COMMANDS = {
 }
 
 def handle_issue_comment(event):
+    if event['comment']['user']['type'] == 'Bot':
+        return
+    
     comment_text = event['comment']['body'].strip().lower()
     comment_author = event['comment']['user']['login']
     issue_number = event['issue']['number']
