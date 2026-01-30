@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 
+from config import DRY_RUN
 from helpers import label_names, create_comment
 
 

@@ -6,9 +6,6 @@ from checkins import check_in_reply_by_assignee, check_in
 from handlers import handle_assign, handle_unassign
 from helpers import get_github, ensure_label, create_comment
 
-DRY_RUN = False
-
-
 COMMANDS = {
     'assign me': handle_assign,
     '/unassign' : handle_unassign,
