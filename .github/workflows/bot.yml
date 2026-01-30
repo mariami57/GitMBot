@@ -30,3 +30,4 @@ jobs:
         run: python bot.py
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          DRY_RUN: True
