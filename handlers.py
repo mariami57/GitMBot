@@ -1,8 +1,4 @@
-import datetime
-from time import timezone
-
-from bot import check_in_reply_by_assignee
-from helpers import label_names, get_assignee_logins, get_assignees, create_comment, get_github, ensure_label
+from helpers import label_names, get_assignee_logins, get_assignees, create_comment
 
 def handle_assign(issue, comment_author):
     assignee_logins = get_assignee_logins(issue)
@@ -42,6 +38,8 @@ def handle_unassign(issue, comment_author):
     issue.remove_from_labels('bot:assigned', 'bot:checkin-sent', 'bot:awaiting-response')
 
     issue.add_to_labels('bot:dropped')
+
+
     create_comment(issue, f'@{comment_author} has unassigned themselves from this issue.\n\n'
                           '*This comment was automatically generated.*')
 
