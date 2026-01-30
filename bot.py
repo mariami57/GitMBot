@@ -71,6 +71,10 @@ def handle_assign(issue, comment_author):
 
     issue.add_to_assignees(comment_author)
     issue.add_to_labels('bot:assigned')
+    labels = label_names(issue)
+    if 'bot:dropped' in labels:
+        issue.remove_from_labels('bot:dropped')
+
     create_comment(issue, f'Assigned to @{comment_author}.\n\n This comment was automatically generated.*')
 
 

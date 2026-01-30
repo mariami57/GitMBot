@@ -161,5 +161,20 @@ def test_check_in_unassign_assignee():
     issue.create_comment.assert_called()
 
 
+def test_assign_after_bot_dropped():
+    issue = fake_issue()
+    comment_author = 'Alice'
+
+    label_dropped = MagicMock()
+    label_dropped.name = 'bot:dropped'
+
+    issue.get_labels.return_value = [label_dropped]
+
+    handle_assign(issue, comment_author)
+
+    issue.add_to_labels.assert_called_with('bot:assigned')
+    issue.remove_from_labels.assert_called_with('bot:dropped')
+    issue.add_to_assignees.assert_called_with('Alice')
+    issue.create_comment.assert_called()
 
 
