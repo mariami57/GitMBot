@@ -3,19 +3,20 @@ import json
 
 
 from checkins import check_in_reply_by_assignee, check_in
-from handlers import handle_assign, handle_unassign
+from handlers import handle_assign, handle_unassign, handle_working_confirmation
 from helpers import get_github, ensure_label, create_comment
 
 COMMANDS = {
     'assign me': handle_assign,
     '/unassign' : handle_unassign,
+    '/working' : handle_working_confirmation,
 
 }
 
 def handle_issue_comment(event):
-    if event['comment']['user']['type'] == 'Bot':
+    if event['comment']['user'].get('type') == 'Bot':
         return
-    
+
     comment_text = event['comment']['body'].strip().lower()
     comment_author = event['comment']['user']['login']
     issue_number = event['issue']['number']
@@ -30,20 +31,12 @@ def handle_issue_comment(event):
     ensure_label(repo, 'bot:checkin-sent', 'cfd3d7', 'Check-in sent')
     ensure_label(repo, 'bot:awaiting-response', 'fbca04', 'Waiting for assignee reply')
 
-    if check_in_reply_by_assignee(issue, comment_author):
-        issue.remove_from_labels('bot:checkin-sent', 'bot:awaiting-response')
-        create_comment(
-            issue,
-            f'Thanks @{comment_author} for checking in! ✅\n\n'
-            '*This comment was automatically generated.*'
-        )
-        exit(0)
-
 
     for command, handler in COMMANDS.items():
         if comment_text.startswith(command):
             handler(issue, comment_author)
             return
+
 
 
 def main():
