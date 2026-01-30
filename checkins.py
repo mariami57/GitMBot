@@ -49,7 +49,7 @@ def check_in(repo):
                 'I’ll unassign this issue.\n\n'
                 '*This comment was automatically generated.*'
             )
-            issue.add_to_labels("bot:warning-sent")
+            issue.add_to_labels('bot:warning-sent')
             continue
 
         if age == 10 and 'bot:awaiting-response' in labels:

@@ -109,7 +109,7 @@ def test_check_in_reply_by_assignee_label_returns_true():
     assert check_in_reply_by_assignee(issue, 'Bob') is True
 
 
-def test_check_in_send_a_reminder_to_assignee(monkeypatch):
+def test_check_in_send_first_reminder_to_assignee(monkeypatch):
     issue = fake_issue()
 
     assignee_mock = MagicMock()
@@ -130,6 +130,36 @@ def test_check_in_send_a_reminder_to_assignee(monkeypatch):
     issue.create_comment.assert_called()
     issue.add_to_labels.assert_any_call('bot:checkin-sent', 'bot:awaiting-response')
 
+def test_check_in_send_second_reminder_to_assignee(monkeypatch):
+    issue = fake_issue()
+
+    assignee_mock = MagicMock()
+    assignee_mock.login = 'Alice'
+    issue.assignees = [assignee_mock]
+
+    label_assigned = MagicMock()
+    label_assigned.name = 'bot:assigned'
+    label_checkin = MagicMock()
+    label_checkin.name = 'bot:checkin-sent'
+    label_awaiting = MagicMock()
+    label_awaiting.name = 'bot:awaiting-response'
+
+    issue.get_labels.return_value = [label_assigned, label_checkin, label_awaiting]
+
+    bot_comment = MagicMock()
+    bot_comment.user.type = 'Bot'
+    bot_comment.body = 'Just checking in'
+    bot_comment.created_at = datetime.now(timezone.utc) - timedelta(days=2)
+    issue.get_comments.return_value = [bot_comment]
+
+    repo = fake_repo(issue)
+
+    monkeypatch.setattr(helpers, 'days_since_assignment', lambda issue, now: 9)
+
+    check_in(repo)
+
+    issue.create_comment.assert_called()
+    issue.add_to_labels.assert_called_with('bot:warning-sent')
 
 def test_check_in_unassign_assignee(monkeypatch):
     issue = fake_issue()
