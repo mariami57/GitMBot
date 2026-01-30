@@ -1,3 +1,6 @@
+import datetime
+from time import timezone
+
 from bot import check_in_reply_by_assignee
 from helpers import label_names, get_assignee_logins, get_assignees, create_comment, get_github, ensure_label
 
@@ -13,6 +16,7 @@ def handle_assign(issue, comment_author):
 
 
     issue.add_to_assignees(comment_author)
+
     issue.add_to_labels('bot:assigned')
     labels = label_names(issue)
     if 'bot:dropped' in labels:

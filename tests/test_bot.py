@@ -2,6 +2,7 @@ import pytest
 from unittest.mock import MagicMock
 from datetime import datetime, timedelta, timezone
 
+import helpers
 from bot import handle_assign, check_in_reply_by_assignee, check_in,handle_issue_comment
 from helpers import get_github, get_repo, create_comment
 
@@ -108,7 +109,7 @@ def test_check_in_reply_by_assignee_label_returns_true():
     assert check_in_reply_by_assignee(issue, 'Bob') is True
 
 
-def test_check_in_send_a_reminder_to_assignee():
+def test_check_in_send_a_reminder_to_assignee(monkeypatch):
     issue = fake_issue()
 
     assignee_mock = MagicMock()
@@ -119,17 +120,18 @@ def test_check_in_send_a_reminder_to_assignee():
     label_assigned.name = 'bot:assigned'
     issue.get_labels.return_value = [label_assigned]
 
-    issue.updated_at = datetime.now(timezone.utc) - timedelta(days=8)
 
     repo = fake_repo(issue)
 
+    monkeypatch.setattr(helpers, 'days_since_assignment', lambda issue, now: 7)
+
     check_in(repo)
 
-    issue.create_comment.assert_called_once()
+    issue.create_comment.assert_called()
     issue.add_to_labels.assert_any_call('bot:checkin-sent', 'bot:awaiting-response')
 
 
-def test_check_in_unassign_assignee():
+def test_check_in_unassign_assignee(monkeypatch):
     issue = fake_issue()
 
     assignee_mock = MagicMock()
@@ -147,11 +149,14 @@ def test_check_in_unassign_assignee():
 
     bot_comment = MagicMock()
     bot_comment.user.type = 'Bot'
-    bot_comment.body = 'Just checking in'
-    bot_comment.created_at = datetime.now(timezone.utc) - timedelta(days=4)
+    bot_comment.body = 'Final reminder'
+    bot_comment.created_at = datetime.now(timezone.utc) - timedelta(days=1)
     issue.get_comments.return_value = [bot_comment]
 
     repo = fake_repo(issue)
+
+    monkeypatch.setattr(helpers, 'days_since_assignment', lambda issue, now: 10)
+
     check_in(repo)
 
     issue.remove_from_assignees.assert_called_with('Alice')

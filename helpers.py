@@ -26,3 +26,7 @@ def label_names(issue):
 
 def create_comment(issue, comment_text):
     return issue.create_comment(comment_text)
+
+
+def days_since_assignment(issue, now):
+    return (now - issue.updated_at).days
