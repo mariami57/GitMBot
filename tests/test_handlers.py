@@ -102,3 +102,17 @@ def test_handle_working_confirmation_no_assignees_exist():
     issue.create_comment.assert_called()
     assert 'No one is currently assigned.' in issue.create_comment.call_args[0][0]
     issue.remove_from_labels.assert_not_called()
+
+def test_handle_working_confirmation_comment_author_not_assigned():
+    issue = fake_issue()
+    comment_author = 'Bob'
+
+    assignee = MagicMock()
+    assignee.login = 'Alice'
+    issue.assignees = [assignee]
+
+    handle_working_confirmation(issue, comment_author)
+
+    issue.create_comment.assert_called()
+    assert 'You are not assigned to this issue.' in issue.create_comment.call_args[0][0]
+    issue.remove_from_labels.assert_not_called()
