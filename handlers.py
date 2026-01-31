@@ -37,7 +37,10 @@ def handle_unassign(issue, comment_author):
         return
 
     issue.remove_from_assignees(comment_author)
-    issue.remove_from_labels('bot:assigned', 'bot:checkin-sent', 'bot:awaiting-response')
+    issue.remove_from_labels('bot:assigned')
+
+    if 'bot:awaiting-response' in label_names(issue) and 'bot:checkin-sent' in label_names(issue):
+        issue.remove_from_labels('bot:checkin-sent', 'bot:awaiting-response')
 
     issue.add_to_labels('bot:dropped')
 
