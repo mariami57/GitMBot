@@ -23,6 +23,9 @@ Assigns the commenting user to the issue (if unassigned).
 - ``/unassign``
 Allows the current assignee to unassign themselves.
 
+- ``/working``
+Allows the assignee to confirm they are still working on the issue, so that they will not be unassigned.
+
 ### ⏰ Scheduled check-ins
 
 Runs daily via GitHub Actions cron:
@@ -132,4 +135,5 @@ Pull requests and ideas are welcome!
 ## 📜 License
 
 MIT 
+
 
