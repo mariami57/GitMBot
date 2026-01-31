@@ -73,7 +73,7 @@ def test_assign_after_bot_dropped():
     issue.create_comment.assert_called()
 
 
-def test_working_confirmation_bot_removes_awaiting_response_and_checkin_labels():
+def test_handle_working_confirmation_bot_removes_awaiting_response_and_checkin_labels():
     issue = fake_issue()
     comment_author = 'Alice'
 
@@ -91,3 +91,14 @@ def test_working_confirmation_bot_removes_awaiting_response_and_checkin_labels()
 
     issue.remove_from_labels.assert_called_with('bot:checkin-sent', 'bot:awaiting-response')
     issue.create_comment.assert_called()
+
+def test_handle_working_confirmation_no_assignees_exist():
+    issue = fake_issue()
+    comment_author = 'Alice'
+    issue.assignees = []
+
+    handle_working_confirmation(issue, comment_author)
+
+    issue.create_comment.assert_called()
+    assert 'No one is currently assigned.' in issue.create_comment.call_args[0][0]
+    issue.remove_from_labels.assert_not_called()
