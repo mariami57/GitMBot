@@ -71,7 +71,8 @@ def handle_working_confirmation(issue, comment_author):
                               '\n\n *This comment was automatically generated.*')
         return
 
-    issue.remove_from_labels('bot:checkin-sent', 'bot:awaiting-response')
+    issue.remove_from_labels('bot:checkin-sent')
+    issue.remove_from_labels('bot:awaiting-response')
     create_comment(issue,  f'Thanks @{comment_author} for confirming you are working on this issue! ✅\n\n'
         '*This comment was automatically generated.*')
 

@@ -89,7 +89,8 @@ def test_handle_working_confirmation_bot_removes_awaiting_response_and_checkin_l
 
     handle_working_confirmation(issue, comment_author)
 
-    issue.remove_from_labels.assert_called_with('bot:checkin-sent', 'bot:awaiting-response')
+    issue.remove_from_labels.assert_any_call('bot:checkin-sent')
+    issue.remove_from_labels.assert_any_call('bot:awaiting-response')
     issue.create_comment.assert_called()
 
 def test_handle_working_confirmation_no_assignees_exist():
