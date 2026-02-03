@@ -131,7 +131,8 @@ def test_handle_issue_comment_working(monkeypatch):
     handle_issue_comment(event)
 
 
-    issue.remove_from_labels.assert_any_call('bot:checkin-sent', 'bot:awaiting-response')
+    issue.remove_from_labels.assert_any_call('bot:checkin-sent')
+    issue.remove_from_labels.assert_any_call('bot:awaiting-response')
     issue.create_comment.assert_called()
     assert (f"Thanks @{event['comment']['user']['login']} for "
             "confirming you are working on this issue!") in issue.create_comment.call_args[0][0]

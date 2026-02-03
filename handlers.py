@@ -67,8 +67,6 @@ def handle_working_confirmation(issue, comment_author):
         return
 
     if not 'bot:checkin-sent' in labels or not 'bot:awaiting-response' in labels:
-        create_comment(issue, f'Please confirm you are working on the issue using the command: /working'
-                              '\n\n *This comment was automatically generated.*')
         return
 
     issue.remove_from_labels('bot:checkin-sent')

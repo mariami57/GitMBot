@@ -34,7 +34,8 @@ def check_in(repo):
                     issue,
                     f'Hi @{assignee} 👋\n\n'
                     'Just checking in — are you still working on this issue?\n\n'
-                    'Please reply within **3 days**, otherwise I’ll unassign you so someone else can take it.\n\n'
+                    'Please reply within **3 days**, otherwise I’ll unassign you so someone else can take it.'
+                    'Please confirm you are working on the issue using the command: /working \n\n'
                     '*This comment was automatically generated.*'
                 )
                 issue.add_to_labels('bot:checkin-sent', 'bot:awaiting-response')
@@ -46,7 +47,8 @@ def check_in(repo):
                 issue,
                 f'⚠️ Final reminder @{assignee}\n\n'
                 'I haven’t heard back yet. If there’s no reply by tomorrow, '
-                'I’ll unassign this issue.\n\n'
+                'I’ll unassign this issue.'
+                'Please confirm you are working on the issue using the command: /working \n\n'
                 '*This comment was automatically generated.*'
             )
             issue.add_to_labels('bot:warning-sent')
