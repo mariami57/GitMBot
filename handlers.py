@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from helpers import label_names, get_assignee_logins, get_assignees, create_comment
 
 def handle_assign(issue, comment_author):
@@ -18,7 +20,8 @@ def handle_assign(issue, comment_author):
     if 'bot:dropped' in labels:
         issue.remove_from_labels('bot:dropped')
 
-    create_comment(issue, f'Assigned to @{comment_author}.\n\n '
+    now = datetime.now(timezone.utc).isoformat()
+    create_comment(issue, f'Assigned to @{comment_author} at {now}.\n\n '
                           '*This comment was automatically generated.*')
 
 def handle_unassign(issue, comment_author):

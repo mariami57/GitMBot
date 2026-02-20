@@ -1,3 +1,4 @@
+import datetime
 import os
 
 from github import Github, Auth
@@ -27,6 +28,15 @@ def label_names(issue):
 def create_comment(issue, comment_text):
     return issue.create_comment(comment_text)
 
+def get_assignment_date(issue, assignee):
+    comments = list(issue.get_comments())
+    for c in reversed(comments):
+        if c.user.type == 'Bot' and f'Assigned_to {assignee}' in c.body:
+            ts_str = c.body.split('at ')[-1]
+            return datetime.fromisoformat(ts_str)
+        return None
 
-def days_since_assignment(issue, now):
-    return (now - issue.updated_at).days
+def days_since_assignment(issue, now, assignee):
+    assigned_at = get_assignment_date(issue, assignee)
+    return (now - assigned_at).days
+

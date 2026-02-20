@@ -25,16 +25,16 @@ def check_in(repo):
             continue
 
         assignee = issue.assignees[0].login
-        age = helpers.days_since_assignment(issue, now)
+        age = helpers.days_since_assignment(issue, now, assignee)
 
         if 'bot:checkin-sent' not in labels:
 
-            if age == 7:
+            if age == 1:
                 helpers.create_comment(
                     issue,
                     f'Hi @{assignee} 👋\n\n'
                     'Just checking in — are you still working on this issue?\n\n'
-                    'Please reply within **3 days**, otherwise I’ll unassign you so someone else can take it.'
+                    'Please reply within **1 day**, otherwise I’ll unassign you so someone else can take it.'
                     'Please confirm you are working on the issue using the command: /working \n\n'
                     '*This comment was automatically generated.*'
                 )
@@ -42,7 +42,7 @@ def check_in(repo):
             continue
 
 
-        if 'bot:awaiting-response' in labels and 'bot:checkin-sent' in labels and age == 9:
+        if 'bot:awaiting-response' in labels and 'bot:checkin-sent' in labels and age == 2:
             helpers.create_comment(
                 issue,
                 f'⚠️ Final reminder @{assignee}\n\n'
@@ -54,7 +54,7 @@ def check_in(repo):
             issue.add_to_labels('bot:warning-sent')
             continue
 
-        if age == 10 and 'bot:awaiting-response' in labels:
+        if age == 3 and 'bot:awaiting-response' in labels:
             comments = list(issue.get_comments())
             checkin_comment = next(
                 (
