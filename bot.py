@@ -7,7 +7,7 @@ from handlers import handle_assign, handle_unassign, handle_working_confirmation
 from helpers import get_github, ensure_label, create_comment
 
 COMMANDS = {
-    'assign me': handle_assign,
+    '/assign me': handle_assign,
     '/unassign' : handle_unassign,
     '/working' : handle_working_confirmation,
 
