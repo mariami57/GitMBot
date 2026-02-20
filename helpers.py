@@ -34,9 +34,11 @@ def get_assignment_date(issue, assignee):
         if c.user.type == 'Bot' and f'Assigned_to {assignee}' in c.body:
             ts_str = c.body.split('at ')[-1]
             return datetime.fromisoformat(ts_str)
-        return None
+    return None
 
 def days_since_assignment(issue, now, assignee):
     assigned_at = get_assignment_date(issue, assignee)
+    if not assigned_at:
+        return None
     return (now - assigned_at).days
 

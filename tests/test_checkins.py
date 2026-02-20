@@ -64,7 +64,7 @@ def test_check_in_send_first_reminder_to_assignee(monkeypatch):
 
     repo = fake_repo(issue)
 
-    monkeypatch.setattr(helpers, 'days_since_assignment', lambda issue, now: 7)
+    monkeypatch.setattr(helpers, 'days_since_assignment', lambda issue, now, assignee: 1)
 
     check_in(repo)
 
@@ -95,7 +95,7 @@ def test_check_in_send_second_reminder_to_assignee(monkeypatch):
 
     repo = fake_repo(issue)
 
-    monkeypatch.setattr(helpers, 'days_since_assignment', lambda issue, now: 9)
+    monkeypatch.setattr(helpers, 'days_since_assignment', lambda issue, now, assignee:2)
 
     check_in(repo)
 
@@ -126,7 +126,7 @@ def test_check_in_unassign_assignee(monkeypatch):
 
     repo = fake_repo(issue)
 
-    monkeypatch.setattr(helpers, 'days_since_assignment', lambda issue, now: 10)
+    monkeypatch.setattr(helpers, 'days_since_assignment', lambda issue, now, assignee:3)
 
     check_in(repo)
 

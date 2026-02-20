@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 
 from config import DRY_RUN
 import helpers
-
+from handlers import handle_unassign
 
 
 def check_in_reply_by_assignee(issue, comment_author):
@@ -68,13 +68,7 @@ def check_in(repo):
                 if DRY_RUN:
                     print(f'[DRY-RUN] Would unassign {assignee} from issue #{issue.number}')
                 else:
-                    issue.remove_from_assignees(assignee)
-                    issue.remove_from_labels(
-                        'bot:assigned',
-                        'bot:checkin-sent',
-                        'bot:awaiting-response'
-                    )
-                    issue.add_to_labels('bot:dropped')
+                    handle_unassign(issue, assignee)
 
                     helpers.create_comment(
                         issue,
