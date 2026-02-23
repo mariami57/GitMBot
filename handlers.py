@@ -1,5 +1,4 @@
 from datetime import datetime, timezone
-
 from helpers import label_names, get_assignee_logins, get_assignees, create_comment
 
 def handle_assign(issue, comment_author):
@@ -21,7 +20,7 @@ def handle_assign(issue, comment_author):
         issue.remove_from_labels('bot:dropped')
 
     now = datetime.now(timezone.utc).isoformat()
-    create_comment(issue, f'Assigned to @{comment_author} at {now}.\n\n '
+    create_comment(issue, f'Assigned to @{comment_author} at {datetime.now(timezone.utc).isoformat()}.\n\n '
                           '*This comment was automatically generated.*')
 
 def handle_unassign(issue, comment_author):
@@ -39,14 +38,15 @@ def handle_unassign(issue, comment_author):
                               '\n\n *This comment was automatically generated.*')
         return
 
-    issue.remove_from_assignees(comment_author)
-    issue.remove_from_labels('bot:assigned')
+
 
     if 'bot:awaiting-response' in label_names(issue) and 'bot:checkin-sent' in label_names(issue):
         issue.remove_from_labels('bot:checkin-sent')
         issue.remove_from_labels('bot:awaiting-response')
 
     issue.add_to_labels('bot:dropped')
+    issue.remove_from_assignees(comment_author)
+    issue.remove_from_labels('bot:assigned')
 
 
     create_comment(issue, f'@{comment_author} has unassigned themselves from this issue.\n\n'

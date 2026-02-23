@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 
 from config import DRY_RUN
 import helpers
@@ -6,7 +6,7 @@ from handlers import handle_unassign
 
 
 def check_in_reply_by_assignee(issue, comment_author):
-    labels= helpers.label_names(issue)
+    labels = helpers.label_names(issue)
 
     if 'bot:awaiting-response' not in labels or not issue.assignees:
         return False
@@ -22,12 +22,16 @@ def check_in(repo):
         labels = helpers.label_names(issue)
 
         if not issue.assignees or 'bot:assigned' not in labels:
+            print("True")
             continue
 
         assignee = issue.assignees[0].login
         age = helpers.days_since_assignment(issue, now, assignee)
+        print(f'Assignee {assignee}, age: {age}')
 
         if 'bot:checkin-sent' not in labels:
+
+            print('bot:checkin-sent not in labels')
 
             if age == 1:
                 helpers.create_comment(
@@ -54,12 +58,12 @@ def check_in(repo):
             issue.add_to_labels('bot:warning-sent')
             continue
 
-        if age == 3 and 'bot:awaiting-response' in labels:
+        if age == 3 and 'bot:awaiting-response' in labels and 'bot:checkin-sent' in labels:
             comments = list(issue.get_comments())
             checkin_comment = next(
                 (
                     c for c in reversed(comments)
-                    if c.user.type == 'Bot' and 'Final reminder' in c.body
+                    if 'Final reminder' in c.body
                 ),
                 None
             )

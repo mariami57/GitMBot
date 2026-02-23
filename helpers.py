@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 import os
 
 from github import Github, Auth
@@ -31,14 +31,25 @@ def create_comment(issue, comment_text):
 def get_assignment_date(issue, assignee):
     comments = list(issue.get_comments())
     for c in reversed(comments):
-        if c.user.type == 'Bot' and f'Assigned_to {assignee}' in c.body:
-            ts_str = c.body.split('at ')[-1]
-            return datetime.fromisoformat(ts_str)
+        marker = f"Assigned to @{assignee} at "
+        if marker in c.body:
+            try:
+                ts_str = c.body.split(marker)[1].strip()
+                ts_str = ts_str.split("\n")[0].strip()
+                ts_str = ts_str.rstrip('.')
+                assigned_at = datetime.fromisoformat(ts_str)
+                return assigned_at
+            except Exception as e:
+                print("Failed to parse timestamp:", e)
+                continue
+
     return None
 
 def days_since_assignment(issue, now, assignee):
     assigned_at = get_assignment_date(issue, assignee)
+
     if not assigned_at:
         return None
+    age = (now - assigned_at).days
     return (now - assigned_at).days
 
