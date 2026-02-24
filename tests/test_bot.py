@@ -27,7 +27,7 @@ def test_handle_issue_comment_assign(monkeypatch):
     repo = fake_repo(issue)
 
     event = {
-        'comment':{'body': 'assign me', 'user': {'login': 'Alice', 'type':'User'}},
+        'comment':{'body': '/assign me', 'user': {'login': 'Alice', 'type':'User'}},
         'issue': {'number': 1},
         'repository':{'full_name':'test/repo'}
     }

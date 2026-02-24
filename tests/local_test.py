@@ -28,11 +28,11 @@ now = datetime.now(timezone.utc)
 #     print(c.body)
 #     print("-" * 40)
 
-# assigned_at = get_assignment_date(issue, assignee)
-# print("Assigned at:", assigned_at)
-#
-# age = days_since_assignment(issue, now, assignee)
-# print("Age in days:", age)
+assigned_at = get_assignment_date(issue, assignee)
+print("Assigned at:", assigned_at)
+
+age = days_since_assignment(issue, now, assignee)
+print("Age in days:", age)
 
 
 # Backup original functions
