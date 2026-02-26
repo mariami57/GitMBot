@@ -44,9 +44,13 @@ def handle_unassign(issue, comment_author):
         issue.remove_from_labels('bot:checkin-sent')
         issue.remove_from_labels('bot:awaiting-response')
 
+    if 'bot:warning-sent' in labels:
+        issue.remove_from_labels('bot:warning-sent')
+
     issue.add_to_labels('bot:dropped')
     issue.remove_from_assignees(comment_author)
     issue.remove_from_labels('bot:assigned')
+
 
     comments = list(issue.get_comments())
     unassign_comment = next(
