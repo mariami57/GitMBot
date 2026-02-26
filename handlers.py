@@ -88,6 +88,10 @@ def handle_working_confirmation(issue, comment_author):
 
     issue.remove_from_labels('bot:checkin-sent')
     issue.remove_from_labels('bot:awaiting-response')
+
+    if 'bot:warning-sent' in labels:
+        issue.remove_from_labels('bot:warning-sent')
+
     create_comment(issue,  f'Thanks @{comment_author} for confirming you are working on this issue! ✅\n\n'
         '*This comment was automatically generated.*')
 
