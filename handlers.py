@@ -20,7 +20,7 @@ def handle_assign(issue, comment_author):
         issue.remove_from_labels('bot:dropped')
 
     now = datetime.now(timezone.utc).isoformat()
-    create_comment(issue, f'Assigned to @{comment_author} at {datetime.now(timezone.utc).isoformat()}.\n\n '
+    create_comment(issue, f'Assigned to @{comment_author} at {now}.\n\n '
                           '*This comment was automatically generated.*')
 
 def handle_unassign(issue, comment_author):
@@ -39,8 +39,8 @@ def handle_unassign(issue, comment_author):
         return
 
 
-
-    if 'bot:awaiting-response' in label_names(issue) and 'bot:checkin-sent' in label_names(issue):
+    labels = label_names(issue)
+    if 'bot:awaiting-response' in labels and 'bot:checkin-sent' in labels:
         issue.remove_from_labels('bot:checkin-sent')
         issue.remove_from_labels('bot:awaiting-response')
 
@@ -48,8 +48,17 @@ def handle_unassign(issue, comment_author):
     issue.remove_from_assignees(comment_author)
     issue.remove_from_labels('bot:assigned')
 
+    comments = list(issue.get_comments())
+    unassign_comment = next(
+        (
+            c for c in reversed(comments)
+            if '/unassign' in c.body
+        ),
+        None
+    )
 
-    create_comment(issue, f'@{comment_author} has unassigned themselves from this issue.\n\n'
+    if unassign_comment is not None:
+        create_comment(issue, f'@{comment_author} has unassigned themselves from this issue.\n\n'
                           '*This comment was automatically generated.*')
 
 

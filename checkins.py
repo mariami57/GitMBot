@@ -1,12 +1,12 @@
 from datetime import datetime, timezone
 
 from config import DRY_RUN
-import helpers
+from helpers import create_comment, label_names, days_since_assignment
 from handlers import handle_unassign
 
 
 def check_in_reply_by_assignee(issue, comment_author):
-    labels = helpers.label_names(issue)
+    labels = label_names(issue)
 
     if 'bot:awaiting-response' not in labels or not issue.assignees:
         return False
@@ -19,14 +19,14 @@ def check_in(repo):
     now = datetime.now(timezone.utc)
 
     for issue in repo.get_issues(state='open'):
-        labels = helpers.label_names(issue)
+        labels = label_names(issue)
 
         if not issue.assignees or 'bot:assigned' not in labels:
             print("True")
             continue
 
         assignee = issue.assignees[0].login
-        age = helpers.days_since_assignment(issue, now, assignee)
+        age = days_since_assignment(issue, now, assignee)
         print(f'Assignee {assignee}, age: {age}')
 
         if 'bot:checkin-sent' not in labels:
@@ -34,7 +34,7 @@ def check_in(repo):
             print('bot:checkin-sent not in labels')
 
             if age == 1:
-                helpers.create_comment(
+                create_comment(
                     issue,
                     f'Hi @{assignee} 👋\n\n'
                     'Just checking in — are you still working on this issue?\n\n'
@@ -47,7 +47,7 @@ def check_in(repo):
 
 
         if 'bot:awaiting-response' in labels and 'bot:checkin-sent' in labels and age == 2 and 'bot:warning-sent' not in labels:
-            helpers.create_comment(
+            create_comment(
                 issue,
                 f'Final reminder @{assignee}\n\n'
                 'I haven’t heard back yet. If there’s no reply by tomorrow, '
@@ -74,7 +74,7 @@ def check_in(repo):
                 else:
                     handle_unassign(issue, assignee)
 
-                    helpers.create_comment(
+                    create_comment(
                         issue,
                         'No response received in the last 3 days.\n\n'
                         'The assignee has been removed so others can pick up this issue.\n\n'

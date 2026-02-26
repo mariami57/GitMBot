@@ -51,5 +51,5 @@ def days_since_assignment(issue, now, assignee):
     if not assigned_at:
         return None
     age = (now - assigned_at).days
-    return (now - assigned_at).days
+    return age
 
