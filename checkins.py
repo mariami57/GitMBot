@@ -46,10 +46,10 @@ def check_in(repo):
             continue
 
 
-        if 'bot:awaiting-response' in labels and 'bot:checkin-sent' in labels and age == 2:
+        if 'bot:awaiting-response' in labels and 'bot:checkin-sent' in labels and age == 2 and 'bot:warning-sent' not in labels:
             helpers.create_comment(
                 issue,
-                f'⚠️ Final reminder @{assignee}\n\n'
+                f'Final reminder @{assignee}\n\n'
                 'I haven’t heard back yet. If there’s no reply by tomorrow, '
                 'I’ll unassign this issue.'
                 'Please confirm you are working on the issue using the command: /working \n\n'
@@ -58,7 +58,7 @@ def check_in(repo):
             issue.add_to_labels('bot:warning-sent')
             continue
 
-        if age == 3 and 'bot:awaiting-response' in labels and 'bot:checkin-sent' in labels:
+        if age == 3 and 'bot:awaiting-response' in labels and 'bot:checkin-sent' in labels and 'bot:warning-sent' in labels:
             comments = list(issue.get_comments())
             checkin_comment = next(
                 (
@@ -76,7 +76,7 @@ def check_in(repo):
 
                     helpers.create_comment(
                         issue,
-                        '⏳ No response received in the last 3 days.\n\n'
+                        'No response received in the last 3 days.\n\n'
                         'The assignee has been removed so others can pick up this issue.\n\n'
                         '*This comment was automatically generated.*'
                     )
