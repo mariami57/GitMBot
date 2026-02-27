@@ -1,17 +1,21 @@
 from datetime import datetime, timezone
 
 from config import DRY_RUN
-from helpers import create_comment, label_names, days_since_assignment
+from helpers import create_comment, label_names, days_since_assignment, get_assignee_logins
 from handlers import handle_unassign
+
 
 
 def check_in_reply_by_assignee(issue, comment_author):
     labels = label_names(issue)
+    assignees_logins = get_assignee_logins(issue)
 
-    if 'bot:awaiting-response' not in labels or not issue.assignees:
+    has_awaiting = 'bot:awaiting-response' in labels
+
+    if not has_awaiting or not assignees_logins:
         return False
 
-    return comment_author == issue.assignees[0].login
+    return comment_author in assignees_logins
 
 
 def check_in(repo):
@@ -21,19 +25,19 @@ def check_in(repo):
     for issue in repo.get_issues(state='open'):
         labels = label_names(issue)
 
-        if not issue.assignees or 'bot:assigned' not in labels:
-            print("True")
+        has_assigned = 'bot:assigned' in labels
+        has_checkin = 'bot:checkin-sent' in labels
+        has_awaiting = 'bot:awaiting-response' in labels
+        has_warning = 'bot:warning-sent' in labels
+
+        if not issue.assignees or not has_assigned:
             continue
 
         assignee = issue.assignees[0].login
         age = days_since_assignment(issue, now, assignee)
-        print(f'Assignee {assignee}, age: {age}')
 
-        if 'bot:checkin-sent' not in labels:
-
-            print('bot:checkin-sent not in labels')
-
-            if age == 1:
+        if not has_checkin:
+            if age == 3:
                 create_comment(
                     issue,
                     f'Hi @{assignee} 👋\n\n'
@@ -46,7 +50,7 @@ def check_in(repo):
             continue
 
 
-        if 'bot:awaiting-response' in labels and 'bot:checkin-sent' in labels and age == 2 and 'bot:warning-sent' not in labels:
+        if age == 7 and has_checkin and has_awaiting and not has_warning:
             create_comment(
                 issue,
                 f'Final reminder @{assignee}\n\n'
@@ -58,7 +62,7 @@ def check_in(repo):
             issue.add_to_labels('bot:warning-sent')
             continue
 
-        if age == 3 and 'bot:awaiting-response' in labels and 'bot:checkin-sent' in labels and 'bot:warning-sent' in labels:
+        if age == 8 and has_checkin and has_awaiting and has_warning:
             comments = list(issue.get_comments())
             checkin_comment = next(
                 (

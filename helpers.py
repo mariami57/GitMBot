@@ -23,7 +23,7 @@ def ensure_label(repo, name, color='ededed', description=''):
         repo.create_label(name=name, color=color, description=description)
 
 def label_names(issue):
-    return  [label.name for label in issue.get_labels()]
+    return  set(label.name for label in issue.get_labels())
 
 def create_comment(issue, comment_text):
     return issue.create_comment(comment_text)
@@ -52,4 +52,15 @@ def days_since_assignment(issue, now, assignee):
         return None
     age = (now - assigned_at).days
     return age
+
+def get_bot_label_state(issue):
+    labels = label_names(issue)
+
+    return {
+        'assigned': 'bot:assigned' in labels,
+        'checkin_sent': 'bot:checkin-sent' in labels,
+        'awaiting_response': 'bot:awaiting-response' in labels,
+        'warning_sent': 'bot:warning-sent' in labels,
+        'dropped': 'bot:dropped' in labels,
+    }
 
