@@ -64,7 +64,7 @@ def test_check_in_send_first_reminder_to_assignee(monkeypatch):
 
     repo = fake_repo(issue)
 
-    monkeypatch.setattr(helpers, 'days_since_assignment', lambda issue, now, assignee: 1)
+    monkeypatch.setattr('checkins.days_since_assignment', lambda issue, now, assignee: 3)
 
     check_in(repo)
 
@@ -90,12 +90,12 @@ def test_check_in_send_second_reminder_to_assignee(monkeypatch):
     bot_comment = MagicMock()
     bot_comment.user.type = 'Bot'
     bot_comment.body = 'Just checking in'
-    bot_comment.created_at = datetime.now(timezone.utc) - timedelta(days=2)
+    bot_comment.created_at = datetime.now(timezone.utc) - timedelta(days=7)
     issue.get_comments.return_value = [bot_comment]
 
     repo = fake_repo(issue)
 
-    monkeypatch.setattr(helpers, 'days_since_assignment', lambda issue, now, assignee:2)
+    monkeypatch.setattr('checkins.days_since_assignment', lambda issue, now, assignee: 7)
 
     check_in(repo)
 
@@ -111,22 +111,27 @@ def test_check_in_unassign_assignee(monkeypatch):
 
     label_assigned = MagicMock()
     label_assigned.name = 'bot:assigned'
+
     label_checkin = MagicMock()
     label_checkin.name = 'bot:awaiting-response'
+
     label_sent = MagicMock()
     label_sent.name = 'bot:checkin-sent'
 
-    issue.get_labels.return_value = [label_assigned, label_checkin, label_sent]
+    label_warning = MagicMock()
+    label_warning.name = 'bot:warning-sent'
+
+    issue.get_labels.return_value = [label_assigned, label_checkin, label_sent, label_warning]
 
     bot_comment = MagicMock()
     bot_comment.user.type = 'Bot'
     bot_comment.body = 'Final reminder'
-    bot_comment.created_at = datetime.now(timezone.utc) - timedelta(days=1)
+    bot_comment.created_at = datetime.now(timezone.utc) - timedelta(days=8)
     issue.get_comments.return_value = [bot_comment]
 
     repo = fake_repo(issue)
 
-    monkeypatch.setattr(helpers, 'days_since_assignment', lambda issue, now, assignee:3)
+    monkeypatch.setattr('checkins.days_since_assignment', lambda issue, now, assignee: 8)
 
     check_in(repo)
 
