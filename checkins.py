@@ -1,18 +1,16 @@
 from datetime import datetime, timezone
 
 from config import DRY_RUN
-from helpers import create_comment, label_names, days_since_assignment, get_assignee_logins
+from helpers import create_comment, label_names, days_since_assignment, get_assignee_logins, get_bot_label_state
 from handlers import handle_unassign
 
 
 
 def check_in_reply_by_assignee(issue, comment_author):
-    labels = label_names(issue)
     assignees_logins = get_assignee_logins(issue)
+    state = get_bot_label_state(issue)
 
-    has_awaiting = 'bot:awaiting-response' in labels
-
-    if not has_awaiting or not assignees_logins:
+    if not state['awaiting_response'] or not assignees_logins:
         return False
 
     return comment_author in assignees_logins
@@ -23,20 +21,15 @@ def check_in(repo):
     now = datetime.now(timezone.utc)
 
     for issue in repo.get_issues(state='open'):
-        labels = label_names(issue)
+        state = get_bot_label_state(issue)
 
-        has_assigned = 'bot:assigned' in labels
-        has_checkin = 'bot:checkin-sent' in labels
-        has_awaiting = 'bot:awaiting-response' in labels
-        has_warning = 'bot:warning-sent' in labels
-
-        if not issue.assignees or not has_assigned:
+        if not issue.assignees or not state['assigned']:
             continue
 
         assignee = issue.assignees[0].login
         age = days_since_assignment(issue, now, assignee)
 
-        if not has_checkin:
+        if not state['checkin_sent']:
             if age == 3:
                 create_comment(
                     issue,
@@ -50,7 +43,7 @@ def check_in(repo):
             continue
 
 
-        if age == 7 and has_checkin and has_awaiting and not has_warning:
+        if age == 7 and state['checkin_sent'] and state['awaiting_response'] and not state['warning_sent']:
             create_comment(
                 issue,
                 f'Final reminder @{assignee}\n\n'
@@ -62,7 +55,7 @@ def check_in(repo):
             issue.add_to_labels('bot:warning-sent')
             continue
 
-        if age == 8 and has_checkin and has_awaiting and has_warning:
+        if age == 8 and state['checkin_sent'] and state['awaiting_response'] and state['warning_sent']:
             comments = list(issue.get_comments())
             checkin_comment = next(
                 (
@@ -80,7 +73,7 @@ def check_in(repo):
 
                     create_comment(
                         issue,
-                        'No response received in the last 3 days.\n\n'
+                        'No response received in the last 8 days.\n\n'
                         'The assignee has been removed so others can pick up this issue.\n\n'
                         '*This comment was automatically generated.*'
                     )

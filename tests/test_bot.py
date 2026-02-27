@@ -56,7 +56,7 @@ def test_ignore_bot_comment(monkeypatch):
     handle_issue_comment(event)
 
 
-def test_handle_issue_comment_unassign(monkeypatch):
+def test_handle_issue_comment_user_unassign_themselves(monkeypatch):
     issue = fake_issue()
     repo = fake_repo(issue)
 
@@ -82,8 +82,10 @@ def test_handle_issue_comment_unassign(monkeypatch):
     checkin_label.name = 'bot:checkin-sent'
     issue.get_labels.return_value = [awaiting_label, assigned_label, checkin_label]
 
+    comment = MagicMock()
+    comment.body = '/unassign'
+    issue.get_comments.return_value = [comment]
 
-    issue.get_labels.return_value = [assigned_label]
 
     handle_issue_comment(event)
 
@@ -92,7 +94,8 @@ def test_handle_issue_comment_unassign(monkeypatch):
 
     existing_label_names = [lbl.name for lbl in issue.get_labels()]
     if 'bot:awaiting-response' in existing_label_names and 'bot:checkin-sent' in existing_label_names:
-        issue.remove_from_labels.asert_any_call('bot:awaiting-response', 'bot:checkin-sent')
+        issue.remove_from_labels.assert_any_call('bot:awaiting-response')
+        issue.remove_from_labels.assert_any_call('bot:checkin-sent')
 
     issue.add_to_labels.assert_called_with('bot:dropped')
     issue.create_comment.assert_called()
