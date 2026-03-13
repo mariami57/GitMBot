@@ -55,7 +55,7 @@ def check_in(repo):
             issue.add_to_labels('bot:warning-sent')
             continue
 
-        if age == 8 and state['checkin_sent'] and state['awaiting_response'] and state['warning_sent']:
+        elif age == 8 and state['checkin_sent'] and state['awaiting_response'] and state['warning_sent']:
             comments = list(issue.get_comments())
             checkin_comment = next(
                 (

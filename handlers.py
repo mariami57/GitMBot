@@ -54,13 +54,8 @@ def handle_unassign(issue, comment_author):
 
 
     comments = list(issue.get_comments())
-    unassign_comment = next(
-        (
-            c for c in reversed(comments)
-            if '/unassign' in c.body
-        ),
-        None
-    )
+    last_comment = comments[-1]
+    unassign_comment = last_comment if '/unassign' in last_comment.body else None
 
     if unassign_comment is not None:
         create_comment(issue, f'@{comment_author} has unassigned themselves from this issue.\n\n'
